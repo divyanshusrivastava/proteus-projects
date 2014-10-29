@@ -3,25 +3,25 @@ basic_atmega.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         000000ee  00000000  00000000  00000054  2**1
+  0 .text         000000f0  00000000  00000000  00000054  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .debug_aranges 00000020  00000000  00000000  00000142  2**0
+  1 .debug_aranges 00000020  00000000  00000000  00000144  2**0
                   CONTENTS, READONLY, DEBUGGING
-  2 .debug_pubnames 0000001b  00000000  00000000  00000162  2**0
+  2 .debug_pubnames 0000001b  00000000  00000000  00000164  2**0
                   CONTENTS, READONLY, DEBUGGING
-  3 .debug_info   00000152  00000000  00000000  0000017d  2**0
+  3 .debug_info   00000152  00000000  00000000  0000017f  2**0
                   CONTENTS, READONLY, DEBUGGING
-  4 .debug_abbrev 000000d5  00000000  00000000  000002cf  2**0
+  4 .debug_abbrev 000000d5  00000000  00000000  000002d1  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_line   0000015b  00000000  00000000  000003a4  2**0
+  5 .debug_line   00000160  00000000  00000000  000003a6  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_frame  00000020  00000000  00000000  00000500  2**2
+  6 .debug_frame  00000020  00000000  00000000  00000508  2**2
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_str    000000d4  00000000  00000000  00000520  2**0
+  7 .debug_str    000000d4  00000000  00000000  00000528  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_loc    00000080  00000000  00000000  000005f4  2**0
+  8 .debug_loc    00000080  00000000  00000000  000005fc  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_ranges 00000048  00000000  00000000  00000674  2**0
+  9 .debug_ranges 00000048  00000000  00000000  0000067c  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -75,7 +75,7 @@ Disassembly of section .text:
   98:	11 e0       	ldi	r17, 0x01	; 1
   9a:	a0 e0       	ldi	r26, 0x00	; 0
   9c:	b1 e0       	ldi	r27, 0x01	; 1
-  9e:	ee ee       	ldi	r30, 0xEE	; 238
+  9e:	e0 ef       	ldi	r30, 0xF0	; 240
   a0:	f0 e0       	ldi	r31, 0x00	; 0
   a2:	00 e0       	ldi	r16, 0x00	; 0
   a4:	0b bf       	out	0x3b, r16	; 59
@@ -86,7 +86,7 @@ Disassembly of section .text:
   ae:	b1 07       	cpc	r27, r17
   b0:	d9 f7       	brne	.-10     	; 0xa8 <__do_copy_data+0x10>
   b2:	0e 94 5f 00 	call	0xbe	; 0xbe <main>
-  b6:	0c 94 75 00 	jmp	0xea	; 0xea <_exit>
+  b6:	0c 94 76 00 	jmp	0xec	; 0xec <_exit>
 
 000000ba <__bad_interrupt>:
   ba:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
@@ -96,13 +96,13 @@ Disassembly of section .text:
 #include<util/delay.h>
 
 void main() {
-	DDRA = 0x01;
-  be:	81 e0       	ldi	r24, 0x01	; 1
-  c0:	8a bb       	out	0x1a, r24	; 26
+	DDRD = 0x03;
+  be:	83 e0       	ldi	r24, 0x03	; 3
+  c0:	81 bb       	out	0x11, r24	; 17
 
 	while (1) {
-		PORTA = 0x01;
-  c2:	41 e0       	ldi	r20, 0x01	; 1
+		PORTD = 0x01;
+  c2:	51 e0       	ldi	r21, 0x01	; 1
     milliseconds can be achieved.
  */
 void
@@ -111,51 +111,61 @@ _delay_loop_2(uint16_t __count)
 	__asm__ volatile (
   c4:	29 e1       	ldi	r18, 0x19	; 25
   c6:	30 e0       	ldi	r19, 0x00	; 0
-  c8:	4b bb       	out	0x1b, r20	; 27
-  ca:	80 e5       	ldi	r24, 0x50	; 80
-  cc:	93 ec       	ldi	r25, 0xC3	; 195
-  ce:	f9 01       	movw	r30, r18
-  d0:	31 97       	sbiw	r30, 0x01	; 1
-  d2:	f1 f7       	brne	.-4      	; 0xd0 <main+0x12>
+		_delay_ms(1000);
+
+		PORTD = 0x02;
+  c8:	42 e0       	ldi	r20, 0x02	; 2
+
+void main() {
+	DDRD = 0x03;
+
+	while (1) {
+		PORTD = 0x01;
+  ca:	52 bb       	out	0x12, r21	; 18
+  cc:	80 e1       	ldi	r24, 0x10	; 16
+  ce:	97 e2       	ldi	r25, 0x27	; 39
+  d0:	f9 01       	movw	r30, r18
+  d2:	31 97       	sbiw	r30, 0x01	; 1
+  d4:	f1 f7       	brne	.-4      	; 0xd2 <main+0x14>
 		__ticks = (uint16_t) (__ms * 10.0);
 		while(__ticks)
 		{
 			// wait 1/10 ms
 			_delay_loop_2(((F_CPU) / 4e3) / 10);
 			__ticks --;
-  d4:	01 97       	sbiw	r24, 0x01	; 1
+  d6:	01 97       	sbiw	r24, 0x01	; 1
 		__ticks = 1;
 	else if (__tmp > 65535)
 	{
 		//	__ticks = requested delay in 1/10 ms
 		__ticks = (uint16_t) (__ms * 10.0);
 		while(__ticks)
-  d6:	d9 f7       	brne	.-10     	; 0xce <main+0x10>
-		_delay_ms(5000);
+  d8:	d9 f7       	brne	.-10     	; 0xd0 <main+0x12>
+		_delay_ms(1000);
 
-		PORTA = 0x00;
-  d8:	1b ba       	out	0x1b, r1	; 27
-  da:	80 e5       	ldi	r24, 0x50	; 80
-  dc:	93 ec       	ldi	r25, 0xC3	; 195
-  de:	f9 01       	movw	r30, r18
-  e0:	31 97       	sbiw	r30, 0x01	; 1
-  e2:	f1 f7       	brne	.-4      	; 0xe0 <main+0x22>
+		PORTD = 0x02;
+  da:	42 bb       	out	0x12, r20	; 18
+  dc:	80 e1       	ldi	r24, 0x10	; 16
+  de:	97 e2       	ldi	r25, 0x27	; 39
+  e0:	f9 01       	movw	r30, r18
+  e2:	31 97       	sbiw	r30, 0x01	; 1
+  e4:	f1 f7       	brne	.-4      	; 0xe2 <main+0x24>
 		{
 			// wait 1/10 ms
 			_delay_loop_2(((F_CPU) / 4e3) / 10);
 			__ticks --;
-  e4:	01 97       	sbiw	r24, 0x01	; 1
+  e6:	01 97       	sbiw	r24, 0x01	; 1
 		__ticks = 1;
 	else if (__tmp > 65535)
 	{
 		//	__ticks = requested delay in 1/10 ms
 		__ticks = (uint16_t) (__ms * 10.0);
 		while(__ticks)
-  e6:	d9 f7       	brne	.-10     	; 0xde <main+0x20>
-  e8:	ef cf       	rjmp	.-34     	; 0xc8 <main+0xa>
+  e8:	d9 f7       	brne	.-10     	; 0xe0 <main+0x22>
+  ea:	ef cf       	rjmp	.-34     	; 0xca <main+0xc>
 
-000000ea <_exit>:
-  ea:	f8 94       	cli
+000000ec <_exit>:
+  ec:	f8 94       	cli
 
-000000ec <__stop_program>:
-  ec:	ff cf       	rjmp	.-2      	; 0xec <__stop_program>
+000000ee <__stop_program>:
+  ee:	ff cf       	rjmp	.-2      	; 0xee <__stop_program>
